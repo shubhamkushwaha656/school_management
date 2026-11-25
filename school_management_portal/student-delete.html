@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Delete Student</title>
+
+    <link rel="stylesheet"
+          href="css/student-delete.css">
+</head>
+
+<body>
+
+    <main class="delete-page">
+
+        <div class="delete-card">
+
+            <!-- Header -->
+            <div class="delete-header">
+
+                <div class="delete-icon">
+                    !
+                </div>
+
+                <h1>Delete Student</h1>
+
+                <p>
+                    Remove a student from the database
+                </p>
+
+            </div>
+
+
+            <!-- Delete Form -->
+            <div class="delete-form">
+
+                <label for="studentid">
+                    Student ID
+                </label>
+
+                <input
+                    type="number"
+                    id="studentid"
+                    placeholder="Enter Student ID"
+                    required
+                >
+
+                <button
+                    type="button"
+                    class="delete-button"
+                    onclick="deleteStudent()">
+
+                    Delete Student
+
+                </button>
+
+            </div>
+
+
+            <!-- Result -->
+            <div
+                id="result"
+                class="result">
+            </div>
+
+
+            <!-- Warning -->
+            <div class="warning-box">
+
+                <strong>Warning</strong>
+
+                <p>
+                    This action will permanently remove the
+                    student record from the database.
+                </p>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const API_URL =
+            "http://127.0.0.1:5000/students";
+
+
+        async function deleteStudent() {
+
+            const studentid =
+                document.getElementById("studentid").value;
+
+            const result =
+                document.getElementById("result");
+
+
+            /* Check Student ID */
+
+            if (!studentid) {
+
+                result.className =
+                    "result error";
+
+                result.textContent =
+                    "Please enter Student ID.";
+
+                return;
+            }
+
+
+            /* Confirmation */
+
+            const confirmDelete =
+                confirm(
+                    "Are you sure you want to delete Student ID "
+                    + studentid
+                    + "?"
+                );
+
+
+            if (!confirmDelete) {
+
+                return;
+            }
+
+
+            result.className =
+                "result loading";
+
+            result.textContent =
+                "Deleting student...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/${studentid}`,
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+
+                const responseText =
+                    await response.text();
+
+
+                console.log(
+                    "Status:",
+                    response.status
+                );
+
+
+                console.log(
+                    "Response:",
+                    responseText
+                );
+
+
+                if (response.ok) {
+
+                    result.className =
+                        "result success";
+
+                    result.textContent =
+                        "Student deleted successfully.";
+
+                    document.getElementById(
+                        "studentid"
+                    ).value = "";
+
+                }
+
+                else {
+
+                    result.className =
+                        "result error";
+
+                    result.textContent =
+                        "Delete failed: "
+                        + responseText;
+
+                }
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Error:",
+                    error
+                );
+
+
+                result.className =
+                    "result error";
+
+                result.textContent =
+                    "Error: "
+                    + error.message;
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

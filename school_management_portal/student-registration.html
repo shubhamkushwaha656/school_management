@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration Form</title>
+    <link rel="stylesheet" href="css/student-registration.css">
+</head>
+<body>
+
+<div class="page">
+    <div class="form-card">
+
+        <div class="top-line"></div>
+
+        <div class="header">
+            <h1>Student Registration Form</h1>
+            <p>Please fill out this form with your student information.</p>
+        </div>
+
+        <form id="studentForm">
+
+            <div class="question">
+                <label for="studentid">Student ID <span>*</span></label>
+                <input type="number" id="studentid" placeholder="Your answer" required>
+            </div>
+
+            <div class="question">
+                <label for="name">Full Name <span>*</span></label>
+                <input type="text" id="name" placeholder="Your answer" required>
+            </div>
+
+            <div class="question">
+                <label for="username">Username <span>*</span></label>
+                <input type="text" id="username" placeholder="Your answer" required>
+            </div>
+
+            <div class="question">
+                <label for="email">Email Address <span>*</span></label>
+                <input type="email" id="email" placeholder="Your answer" required>
+            </div>
+
+            <div class="question">
+                <label for="age">Age <span>*</span></label>
+                <input type="number" id="age" placeholder="Your answer" min="1" required>
+            </div>
+
+            <div class="question">
+                <label for="country">Country <span>*</span></label>
+                <input type="text" id="country" placeholder="Your answer" required>
+            </div>
+
+            <div class="question">
+                <label>Subscription Plan <span>*</span></label>
+
+                <label class="radio-option">
+                    <input type="radio" name="plan" value="Free" required>
+                    Free
+                </label>
+
+                <label class="radio-option">
+                    <input type="radio" name="plan" value="Basic">
+                    Basic
+                </label>
+
+                <label class="radio-option">
+                    <input type="radio" name="plan" value="Premium">
+                    Premium
+                </label>
+
+                <label class="radio-option">
+                    <input type="radio" name="plan" value="Gold">
+                    Gold
+                </label>
+            </div>
+
+            <div class="question">
+                <label for="expire_at">Expiry Time <span>*</span></label>
+                <input type="time" id="expire_at" required>
+            </div>
+
+            <div class="question">
+                <label>Student Status</label>
+
+                <label class="radio-option">
+                    <input type="radio" name="is_active" value="true" checked>
+                    Active
+                </label>
+
+                <label class="radio-option">
+                    <input type="radio" name="is_active" value="false">
+                    Inactive
+                </label>
+            </div>
+
+            <div class="actions">
+                <button type="submit">Submit</button>
+                <button type="reset" class="reset-btn">Clear form</button>
+            </div>
+
+            <p class="required-note">* Indicates required question</p>
+
+        </form>
+
+        <div id="result" class="result"></div>
+
+    </div>
+
+    <p class="footer">Student Registration • FastAPI CRUD</p>
+</div>
+
+<script>
+const API_URL = "http://127.0.0.1:5000/students";
+
+document.getElementById("studentForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const plan = document.querySelector('input[name="plan"]:checked').value;
+    const active = document.querySelector('input[name="is_active"]:checked').value;
+
+    const student = {
+        studentid: Number(document.getElementById("studentid").value),
+        username: document.getElementById("username").value,
+        email: document.getElementById("email").value,
+        is_active: active === "true",
+        name: document.getElementById("name").value,
+        age: Number(document.getElementById("age").value),
+        country: document.getElementById("country").value,
+        plan: plan,
+        expire_at: document.getElementById("expire_at").value + ":00"
+    };
+
+    const result = document.getElementById("result");
+    result.className = "result";
+    result.textContent = "Submitting...";
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(student)
+        });
+
+        const data = await response.json(); 
+
+        if (response.ok) {
+            result.className = "result success";
+            result.textContent = "Your response has been recorded successfully.";
+            document.getElementById("studentForm").reset();
+        } else {
+            result.className = "result error";
+            result.textContent = data.detail || "Submission failed.";
+        }
+    } catch (error) {
+        result.className = "result error";
+        result.textContent =
+            "Unable to connect to the FastAPI server. Start uvicorn and try again.";
+    }
+});
+</script>
+
+</body>
+</html>

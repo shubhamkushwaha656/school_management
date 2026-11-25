@@ -1,0 +1,182 @@
+Exactly. For now, **forget CSS**. Think of HTML as designing the **floor plan of the website**.
+
+For our School Management System, think about the structure like this:
+
+```text
+                         WEBSITE
+                            │
+                            │
+                     ┌──────▼──────┐
+                     │    BODY     │
+                     └──────┬──────┘
+                            │
+             ┌──────────────┼──────────────┐
+             │              │              │
+             ▼              ▼              ▼
+          HEADER           MAIN          FOOTER
+             │              │              │
+             │              │              │
+             │        ┌─────┼─────┐        │
+             │        │     │     │        │
+             ▼        ▼     ▼     ▼        ▼
+           Logo     Section Section Section Copyright
+                    │       │       │
+                    │       │       │
+                    ▼       ▼       ▼
+                   Div     Div     Div
+                    │       │       │
+                    ▼       ▼       ▼
+                 Content  Content  Content
+```
+
+### Now let's map it to our actual website
+
+```text
+BODY
+│
+├── HEADER
+│   │
+│   ├── DIV → Logo
+│   │
+│   └── NAV
+│       ├── Home
+│       ├── About
+│       ├── Features
+│       ├── Contact
+│       └── Login
+│
+│
+├── MAIN
+│   │
+│   ├── SECTION → Hero
+│   │   │
+│   │   ├── DIV → Hero content
+│   │   │   ├── Heading
+│   │   │   ├── Paragraph
+│   │   │   └── Buttons
+│   │   │
+│   │   └── DIV → Hero image
+│   │
+│   │
+│   ├── SECTION → Features
+│   │   │
+│   │   ├── DIV → Section heading
+│   │   │
+│   │   └── DIV → Feature container
+│   │       │
+│   │       ├── DIV → Student card
+│   │       ├── DIV → Teacher card
+│   │       └── DIV → Course card
+│   │
+│   │
+│   └── SECTION → About
+│       │
+│       └── DIV → About content
+│
+│
+└── FOOTER
+    │
+    ├── DIV → School information
+    ├── DIV → Links
+    └── DIV → Copyright
+```
+
+## The important distinction
+
+Think of it as **big box → smaller box → smaller box**:
+
+```text
+BODY
+│
+└── MAIN
+    │
+    └── SECTION
+        │
+        └── DIV
+            │
+            ├── DIV
+            │
+            ├── DIV
+            │
+            └── DIV
+```
+
+For example, our Features area:
+
+```text
+┌─────────────────────────────────────────────┐
+│ SECTION: FEATURES                            │
+│                                             │
+│       Everything You Need                   │
+│                                             │
+│   ┌───────────┐ ┌───────────┐ ┌───────────┐│
+│   │   DIV     │ │   DIV     │ │   DIV     ││
+│   │           │ │           │ │           ││
+│   │ Students  │ │ Teachers  │ │ Courses   ││
+│   └───────────┘ └───────────┘ └───────────┘│
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+So:
+
+**`section` = major area**
+
+**`div` = container inside that area**
+
+**nested `div` = smaller containers inside the container**
+
+---
+
+### One more important thing
+
+Don't think that every website has to follow:
+
+```text
+section
+  ↓
+div
+  ↓
+div
+```
+
+HTML gives us different elements with different meanings:
+
+```text
+header   → top/header area
+nav      → navigation
+main     → main content
+section  → major logical section
+article  → independent piece of content
+aside    → side/secondary content
+footer   → bottom area
+div      → generic container
+```
+
+For **our learning project**, this is the mental model I want you to keep:
+
+```text
+             WEBSITE
+                │
+        ┌───────┼────────┐
+        │       │        │
+      HEADER   MAIN    FOOTER
+                │
+        ┌───────┼────────┐
+        │       │        │
+      SECTION SECTION  SECTION
+        │       │        │
+       DIV     DIV      DIV
+        │       │        │
+      CONTENT CONTENT  CONTENT
+```
+
+Once you understand this hierarchy, **CSS becomes much easier**, because CSS is essentially going to tell these boxes:
+
+> How big should you be?
+> Where should you be?
+> How much space should you have?
+> What should you look like?
+> How should you arrange your children?
+
+That's the foundation we'll use for the entire school management site.

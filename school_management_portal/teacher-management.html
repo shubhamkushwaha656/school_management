@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>Teacher Management - ABC School</title>
+
+<link rel="stylesheet" href="css/teacher-management.css">
+```
+
+</head>
+
+<body>
+
+```
+<!-- Navbar -->
+<nav class="navbar">
+
+    <div class="logo">
+        <h2>ABC School</h2>
+    </div>
+
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="student-registration.html">Students</a>
+        <a href="student-list.html">Student List</a>
+        <a href="course-management.html">Courses</a>
+        <a href="teacher-management.html" class="active">Teachers</a>
+        <a href="login.html">Login</a>
+    </div>
+
+</nav>
+
+
+<!-- Main Container -->
+<main class="container">
+
+    <!-- Page Header -->
+    <section class="page-header">
+
+        <div>
+            <h1>Teacher Management</h1>
+            <p>Manage teachers of ABC School</p>
+        </div>
+
+        <button class="add-btn" onclick="openAddForm()">
+            + Add Teacher
+        </button>
+
+    </section>
+
+
+    <!-- Statistics -->
+    <section class="stats">
+
+        <div class="stat-card">
+            <div class="stat-icon">👨‍🏫</div>
+
+            <div>
+                <h3 id="totalTeachers">0</h3>
+                <p>Total Teachers</p>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon">📧</div>
+
+            <div>
+                <h3 id="teacherEmails">0</h3>
+                <p>Email Records</p>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon">👤</div>
+
+            <div>
+                <h3 id="teacherUsers">0</h3>
+                <p>Usernames</p>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- Search -->
+    <section class="search-section">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search by name, username or email..."
+            onkeyup="searchTeachers()"
+        >
+
+        <button onclick="loadTeachers()">
+            Refresh
+        </button>
+
+    </section>
+
+
+    <!-- Teacher Form -->
+    <section class="form-section" id="teacherFormSection">
+
+        <div class="form-header">
+
+            <div>
+                <h2 id="formTitle">Add New Teacher</h2>
+                <p>Enter teacher information below</p>
+            </div>
+
+            <button class="close-btn" onclick="closeForm()">
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="teacherForm">
+
+            <div class="form-grid">
+
+                <!-- Teacher ID -->
+                <div class="form-group">
+
+                    <label for="TeacherId">
+                        Teacher ID
+                    </label>
+
+                    <input
+                        type="number"
+                        id="TeacherId"
+                        placeholder="Enter teacher ID"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Teacher Name -->
+                <div class="form-group">
+
+                    <label for="TeacherName">
+                        Teacher Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="TeacherName"
+                        placeholder="Enter teacher name"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Username -->
+                <div class="form-group">
+
+                    <label for="TeacherUsername">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        id="TeacherUsername"
+                        placeholder="Enter username"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Email -->
+                <div class="form-group">
+
+                    <label for="TeacherEmail">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="TeacherEmail"
+                        placeholder="Enter email"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Age -->
+                <div class="form-group">
+
+                    <label for="TeacherAge">
+                        Age
+                    </label>
+
+                    <input
+                        type="number"
+                        id="TeacherAge"
+                        placeholder="Enter age"
+                        min="18"
+                        max="100"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-buttons">
+
+                <button
+                    type="submit"
+                    class="save-btn"
+                >
+                    Save Teacher
+                </button>
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="closeForm()"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- Teacher List -->
+    <section class="teachers-section">
+
+        <div class="section-title">
+
+            <div>
+                <h2>Teacher List</h2>
+                <p>All registered teachers</p>
+            </div>
+
+        </div>
+
+
+        <div id="teacherContainer" class="teacher-grid">
+
+            <!-- Teacher cards will appear here -->
+
+        </div>
+
+
+        <div
+            id="noTeachers"
+            class="no-teachers"
+            style="display:none;"
+        >
+
+            <div class="empty-icon">👨‍🏫</div>
+
+            <h3>No Teachers Found</h3>
+
+            <p>
+                No teacher records are available.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- JavaScript -->
+<script>
+
+    const API_URL = "http://127.0.0.1:5000/teachers";
+
+    let teachers = [];
+
+    let editingTeacherId = null;
+
+
+    // ==========================
+    // Load Teachers
+    // ==========================
+
+    async function loadTeachers() {
+
+        try {
+
+            const response = await fetch(API_URL);
+
+            if (!response.ok) {
+
+                throw new Error("Unable to load teachers");
+
+            }
+
+            teachers = await response.json();
+
+            displayTeachers(teachers);
+
+            updateStatistics();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Unable to connect to Teacher API.\n\n" +
+                "Make sure FastAPI is running on port 8000."
+            );
+
+        }
+
+    }
+
+
+    // ==========================
+    // Display Teachers
+    // ==========================
+
+    function displayTeachers(data) {
+
+        const container =
+            document.getElementById("teacherContainer");
+
+        const noTeachers =
+            document.getElementById("noTeachers");
+
+
+        container.innerHTML = "";
+
+
+        if (data.length === 0) {
+
+            noTeachers.style.display = "block";
+
+            return;
+
+        }
+
+
+        noTeachers.style.display = "none";
+
+
+        data.forEach(teacher => {
+
+            const card = document.createElement("div");
+
+            card.className = "teacher-card";
+
+
+            card.innerHTML = `
+
+                <div class="teacher-top">
+
+                    <div class="teacher-avatar">
+                        ${teacher.TeacherName
+                            .charAt(0)
+                            .toUpperCase()}
+                    </div>
+
+                    <div class="teacher-info">
+
+                        <h3>
+                            ${teacher.TeacherName}
+                        </h3>
+
+                        <span>
+                            ID: ${teacher.TeacherId}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="teacher-details">
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Username
+                        </span>
+
+                        <span>
+                            @${teacher.TeacherUsername}
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Email
+                        </span>
+
+                        <span>
+                            ${teacher.TeacherEmail}
+                        </span>
+
+                    </div>
+
+
+                    <div class="detail-row">
+
+                        <span class="detail-label">
+                            Age
+                        </span>
+
+                        <span>
+                            ${teacher.TeacherAge} years
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="teacher-actions">
+
+                    <button
+                        class="edit-btn"
+                        onclick="editTeacher(${teacher.TeacherId})"
+                    >
+                        Edit
+                    </button>
+
+                    <button
+                        class="delete-btn"
+                        onclick="deleteTeacher(${teacher.TeacherId})"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+            `;
+
+
+            container.appendChild(card);
+
+        });
+
+    }
+
+
+    // ==========================
+    // Statistics
+    // ==========================
+
+    function updateStatistics() {
+
+        document.getElementById("totalTeachers")
+            .textContent = teachers.length;
+
+
+        document.getElementById("teacherEmails")
+            .textContent = teachers.filter(
+                teacher => teacher.TeacherEmail
+            ).length;
+
+
+        document.getElementById("teacherUsers")
+            .textContent = teachers.filter(
+                teacher => teacher.TeacherUsername
+            ).length;
+
+    }
+
+
+    // ==========================
+    // Open Add Form
+    // ==========================
+
+    function openAddForm() {
+
+        editingTeacherId = null;
+
+        document.getElementById("teacherForm").reset();
+
+        document.getElementById("formTitle")
+            .textContent = "Add New Teacher";
+
+
+        document.querySelector(".save-btn")
+            .textContent = "Save Teacher";
+
+
+        document.getElementById("TeacherId")
+            .disabled = false;
+
+
+        document.getElementById("teacherFormSection")
+            .style.display = "block";
+
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    // ==========================
+    // Close Form
+    // ==========================
+
+    function closeForm() {
+
+        document.getElementById("teacherFormSection")
+            .style.display = "none";
+
+        editingTeacherId = null;
+
+    }
+
+
+    // ==========================
+    // Edit Teacher
+    // ==========================
+
+    function editTeacher(id) {
+
+        const teacher = teachers.find(
+            item => item.TeacherId === id
+        );
+
+
+        if (!teacher) {
+
+            alert("Teacher not found");
+
+            return;
+
+        }
+
+
+        editingTeacherId = id;
+
+
+        document.getElementById("TeacherId")
+            .value = teacher.TeacherId;
+
+
+        document.getElementById("TeacherName")
+            .value = teacher.TeacherName;
+
+
+        document.getElementById("TeacherUsername")
+            .value = teacher.TeacherUsername;
+
+
+        document.getElementById("TeacherEmail")
+            .value = teacher.TeacherEmail;
+
+
+        document.getElementById("TeacherAge")
+            .value = teacher.TeacherAge;
+
+
+        document.getElementById("TeacherId")
+            .disabled = true;
+
+
+        document.getElementById("formTitle")
+            .textContent = "Update Teacher";
+
+
+        document.querySelector(".save-btn")
+            .textContent = "Update Teacher";
+
+
+        document.getElementById("teacherFormSection")
+            .style.display = "block";
+
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+
+    }
+
+
+    // ==========================
+    // Save / Update Teacher
+    // ==========================
+
+    document.getElementById("teacherForm")
+        .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+
+        const teacherData = {
+
+            TeacherId:
+                Number(
+                    document.getElementById("TeacherId").value
+                ),
+
+            TeacherName:
+                document.getElementById("TeacherName").value,
+
+            TeacherUsername:
+                document.getElementById("TeacherUsername").value,
+
+            TeacherEmail:
+                document.getElementById("TeacherEmail").value,
+
+            TeacherAge:
+                Number(
+                    document.getElementById("TeacherAge").value
+                )
+
+        };
+
+
+        try {
+
+            let response;
+
+
+            // UPDATE
+            if (editingTeacherId !== null) {
+
+                response = await fetch(
+                    `${API_URL}/${editingTeacherId}`,
+                    {
+
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(teacherData)
+
+                    }
+                );
+
+            }
+
+
+            // CREATE
+            else {
+
+                response = await fetch(
+                    API_URL,
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(teacherData)
+
+                    }
+                );
+
+            }
+
+
+            const result = await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.detail ||
+                    "Operation failed"
+                );
+
+            }
+
+
+            alert(result.message);
+
+
+            closeForm();
+
+            await loadTeachers();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Error: " + error.message
+            );
+
+        }
+
+    });
+
+
+    // ==========================
+    // Delete Teacher
+    // ==========================
+
+    async function deleteTeacher(id) {
+
+        const teacher =
+            teachers.find(
+                item => item.TeacherId === id
+            );
+
+
+        if (!teacher) {
+
+            return;
+
+        }
+
+
+        const confirmDelete = confirm(
+
+            `Are you sure you want to delete\n\n` +
+            `${teacher.TeacherName}?\n\n` +
+            `Teacher ID: ${id}`
+
+        );
+
+
+        if (!confirmDelete) {
+
+            return;
+
+        }
+
+
+        try {
+
+            const response = await fetch(
+                `${API_URL}/${id}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+            const result = await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.detail ||
+                    "Delete failed"
+                );
+
+            }
+
+
+            alert(result.message);
+
+
+            await loadTeachers();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Error: " + error.message
+            );
+
+        }
+
+    }
+
+
+    // ==========================
+    // Search Teachers
+    // ==========================
+
+    function searchTeachers() {
+
+        const searchText =
+            document.getElementById("searchInput")
+                .value
+                .toLowerCase()
+                .trim();
+
+
+        if (searchText === "") {
+
+            displayTeachers(teachers);
+
+            return;
+
+        }
+
+
+        const filtered =
+            teachers.filter(teacher =>
+
+                String(teacher.TeacherId)
+                    .toLowerCase()
+                    .includes(searchText)
+
+                ||
+
+                teacher.TeacherName
+                    .toLowerCase()
+                    .includes(searchText)
+
+                ||
+
+                teacher.TeacherUsername
+                    .toLowerCase()
+                    .includes(searchText)
+
+                ||
+
+                teacher.TeacherEmail
+                    .toLowerCase()
+                    .includes(searchText)
+
+            );
+
+
+        displayTeachers(filtered);
+
+    }
+
+
+    // ==========================
+    // Initial Load
+    // ==========================
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            closeForm();
+
+            loadTeachers();
+
+        }
+    );
+
+</script>
+```
+
+</body>
+</html>

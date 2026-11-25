@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Update Student</title>
+
+    <link rel="stylesheet" href="css/student-update.css">
+
+</head>
+
+<body>
+
+    <div class="update-page">
+
+        <div class="update-card">
+
+            <!-- Header -->
+
+            <div class="update-header">
+
+                <h1>Update Student</h1>
+
+                <p>
+                    Enter Student ID to load student details
+                </p>
+
+            </div>
+
+
+            <!-- Student ID -->
+
+            <div class="search-section">
+
+                <label for="studentid">
+                    Student ID
+                </label>
+
+                <div class="search-box">
+
+                    <input
+                        type="number"
+                        id="studentid"
+                        placeholder="Enter Student ID"
+                    >
+
+                    <button
+                        type="button"
+                        class="load-button"
+                        onclick="loadStudent()">
+
+                        Load Student
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Result -->
+
+            <div
+                id="result"
+                class="result">
+            </div>
+
+
+            <!-- Update Form -->
+
+            <form
+                id="updateForm"
+                class="update-form">
+
+
+                <!-- Username -->
+
+                <div class="form-group">
+
+                    <label for="username">
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        placeholder="Username"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Email -->
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Email"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Name -->
+
+                <div class="form-group">
+
+                    <label for="name">
+                        Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Name"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Age -->
+
+                <div class="form-group">
+
+                    <label for="age">
+                        Age
+                    </label>
+
+                    <input
+                        type="number"
+                        id="age"
+                        placeholder="Age"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Country -->
+
+                <div class="form-group">
+
+                    <label for="country">
+                        Country
+                    </label>
+
+                    <input
+                        type="text"
+                        id="country"
+                        placeholder="Country"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Plan -->
+
+                <div class="form-group">
+
+                    <label>
+                        Plan
+                    </label>
+
+                    <div class="radio-group">
+
+                        <label>
+
+                            <input
+                                type="radio"
+                                name="plan"
+                                value="Basic"
+                            >
+
+                            Basic
+
+                        </label>
+
+
+                        <label>
+
+                            <input
+                                type="radio"
+                                name="plan"
+                                value="Premium"
+                            >
+
+                            Premium
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Active Status -->
+
+                <div class="form-group">
+
+                    <label>
+                        Active Status
+                    </label>
+
+                    <div class="radio-group">
+
+                        <label>
+
+                            <input
+                                type="radio"
+                                name="is_active"
+                                value="true"
+                            >
+
+                            Active
+
+                        </label>
+
+
+                        <label>
+
+                            <input
+                                type="radio"
+                                name="is_active"
+                                value="false"
+                            >
+
+                            Inactive
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Expire At -->
+
+                <div class="form-group">
+
+                    <label for="expire_at">
+                        Expire At
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        id="expire_at"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Update Button -->
+
+                <button
+                    type="submit"
+                    class="update-button">
+
+                    Update Student
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const API_URL =
+            "http://127.0.0.1:5000/students";
+
+
+        /* =================================
+           LOAD STUDENT
+           ================================= */
+
+        async function loadStudent() {
+
+            const studentid =
+                document.getElementById(
+                    "studentid"
+                ).value;
+
+            const result =
+                document.getElementById(
+                    "result"
+                );
+
+
+            if (!studentid) {
+
+                result.className =
+                    "result error";
+
+                result.textContent =
+                    "Please enter Student ID.";
+
+                return;
+            }
+
+
+            result.className =
+                "result loading";
+
+            result.textContent =
+                "Loading student details...";
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/${studentid}`,
+                        {
+                            method: "GET"
+                        }
+                    );
+
+
+                const responseText =
+                    await response.text();
+
+
+                console.log(
+                    "GET Status:",
+                    response.status
+                );
+
+                console.log(
+                    "GET Response:",
+                    responseText
+                );
+
+
+                if (!response.ok) {
+
+                    result.className =
+                        "result error";
+
+                    result.textContent =
+                        "Student not found.";
+
+                    return;
+                }
+
+
+                const student =
+                    JSON.parse(responseText);
+
+
+                /* Auto fill */
+
+                document.getElementById(
+                    "username"
+                ).value =
+                    student.username ?? "";
+
+
+                document.getElementById(
+                    "email"
+                ).value =
+                    student.email ?? "";
+
+
+                document.getElementById(
+                    "name"
+                ).value =
+                    student.name ?? "";
+
+
+                document.getElementById(
+                    "age"
+                ).value =
+                    student.age ?? "";
+
+
+                document.getElementById(
+                    "country"
+                ).value =
+                    student.country ?? "";
+
+
+                /* Plan */
+
+                document.querySelectorAll(
+                    'input[name="plan"]'
+                ).forEach(
+                    function(radio) {
+
+                        radio.checked =
+                            radio.value ===
+                            String(student.plan);
+
+                    }
+                );
+
+
+                /* Active status */
+
+                document.querySelectorAll(
+                    'input[name="is_active"]'
+                ).forEach(
+                    function(radio) {
+
+                        radio.checked =
+                            radio.value ===
+                            String(student.is_active);
+
+                    }
+                );
+
+
+                /* Expire date */
+
+                if (student.expire_at) {
+
+                    expire_at:
+    document.getElementById("expire_at").value.replace("T", " ") + ":00"
+
+                }
+
+
+                result.className =
+                    "result success";
+
+                result.textContent =
+                    "Student loaded successfully. You can now edit the details.";
+
+            }
+
+
+            catch (error) {
+
+                console.error(
+                    "Error:",
+                    error
+                );
+
+                result.className =
+                    "result error";
+
+                result.textContent =
+                    "Error: " + error.message;
+
+            }
+
+        }
+
+
+        /* =================================
+           UPDATE STUDENT
+           ================================= */
+
+        document.getElementById(
+            "updateForm"
+        ).addEventListener(
+            "submit",
+            async function(event) {
+
+                /*
+                   Prevent page refresh
+                */
+
+                event.preventDefault();
+
+
+                const studentid =
+                    document.getElementById(
+                        "studentid"
+                    ).value;
+
+
+                const result =
+                    document.getElementById(
+                        "result"
+                    );
+
+
+                if (!studentid) {
+
+                    result.className =
+                        "result error";
+
+                    result.textContent =
+                        "Please enter Student ID.";
+
+                    return;
+                }
+
+
+                const plan =
+                    document.querySelector(
+                        'input[name="plan"]:checked'
+                    );
+
+
+                const active =
+                    document.querySelector(
+                        'input[name="is_active"]:checked'
+                    );
+
+
+                const student = {
+
+                    username:
+                        document.getElementById(
+                            "username"
+                        ).value,
+
+                    email:
+                        document.getElementById(
+                            "email"
+                        ).value,
+
+                    is_active:
+                        active
+                            ? active.value === "true"
+                            : false,
+
+                    name:
+                        document.getElementById(
+                            "name"
+                        ).value,
+
+                    age:
+                        Number(
+                            document.getElementById(
+                                "age"
+                            ).value
+                        ),
+
+                    country:
+                        document.getElementById(
+                            "country"
+                        ).value,
+
+                    plan:
+                        plan
+                            ? plan.value
+                            : "",
+
+                    expire_at:
+                        document.getElementById("expire_at").value.replace("T", " ") + ":00"
+
+                };
+
+
+                result.className =
+                    "result loading";
+
+                result.textContent =
+                    "Updating student...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${API_URL}/${studentid}`,
+                            {
+
+                                method: "PUT",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify(
+                                        student
+                                    )
+                            }
+                        );
+
+
+                    const responseText =
+                        await response.text();
+
+
+                    console.log(
+                        "PUT Status:",
+                        response.status
+                    );
+
+                    console.log(
+                        "PUT Response:",
+                        responseText
+                    );
+
+
+                    if (response.ok) {
+
+                        result.className =
+                            "result success";
+
+                        result.textContent =
+                            "Student updated successfully.";
+
+                    }
+
+                    else {
+
+                        result.className =
+                            "result error";
+
+                        result.textContent =
+                            "Update failed: " +
+                            responseText;
+
+                    }
+
+                }
+
+
+                catch (error) {
+
+                    console.error(
+                        "Error:",
+                        error
+                    );
+
+                    result.className =
+                        "result error";
+
+                    result.textContent =
+                        "Error: " +
+                        error.message;
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>

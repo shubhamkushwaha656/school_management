@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrolled Course Management</title>
+
+    <link rel="stylesheet" href="css/EnrolledCourse.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">ABC School</div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="student-list.html">Students</a>
+            <a href="course-management.html">Courses</a>
+            <a href="teacher-management.html">Teachers</a>
+            <a href="enrolled-course.html" class="active">Enrolled Courses</a>
+        </div>
+    </nav>
+
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <div class="page-header">
+            <h1>Enrolled Course Management</h1>
+            <p>Manage student course enrollments</p>
+        </div>
+
+
+        <!-- Form Card -->
+        <div class="card">
+
+            <h2 id="formTitle">Add Enrolled Course</h2>
+
+            <form id="enrollmentForm">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="studentid">Student ID</label>
+                        <input
+                            type="number"
+                            id="studentid"
+                            placeholder="Enter Student ID"
+                            required
+                        >
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="courseId">Course ID</label>
+                        <input
+                            type="number"
+                            id="courseId"
+                            placeholder="Enter Course ID"
+                            required
+                        >
+                    </div>
+
+
+                    <div class="form-group full-width">
+                        <label for="title">Course Title</label>
+                        <input
+                            type="text"
+                            id="title"
+                            placeholder="Enter Course Title"
+                            required
+                        >
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="progress">Progress (%)</label>
+                        <input
+                            type="number"
+                            id="progress"
+                            min="0"
+                            max="100"
+                            placeholder="0 - 100"
+                            required
+                        >
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="status1">Status</label>
+
+                        <select id="status1" required>
+                            <option value="">Select Status</option>
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="On Hold">On Hold</option>
+                        </select>
+                    </div>
+
+                </div>
+
+
+                <div class="form-buttons">
+
+                    <button type="submit" class="btn primary">
+                        Save Enrollment
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn secondary"
+                        onclick="resetForm()"
+                    >
+                        Clear
+                    </button>
+
+                </div>
+
+            </form>
+
+            <p id="message"></p>
+
+        </div>
+
+
+        <!-- List Card -->
+        <div class="card">
+
+            <div class="list-header">
+
+                <div>
+                    <h2>Enrolled Courses</h2>
+                    <p id="totalRecords">Total: 0</p>
+                </div>
+
+                <div class="search-box">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search Student ID, Course ID or Title..."
+                        onkeyup="searchCourses()"
+                    >
+                </div>
+
+            </div>
+
+
+            <!-- Table -->
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Course ID</th>
+                            <th>Course Title</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="courseTableBody">
+                        <tr>
+                            <td colspan="6" class="loading">
+                                Loading courses...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+<script>
+
+const API_URL = "http://127.0.0.1:5000/enrolled-courses";
+
+let allCourses = [];
+let editStudentId = null;
+let editCourseId = null;
+
+
+// Load all courses
+async function loadCourses() {
+
+    try {
+
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+            throw new Error("Failed to load courses");
+        }
+
+        allCourses = await response.json();
+
+        displayCourses(allCourses);
+
+        document.getElementById("totalRecords").innerText =
+            "Total: " + allCourses.length;
+
+    } catch (error) {
+
+        document.getElementById("courseTableBody").innerHTML = `
+            <tr>
+                <td colspan="6" class="error">
+                    ${error.message}
+                </td>
+            </tr>
+        `;
+
+    }
+}
+
+
+// Display courses
+function displayCourses(courses) {
+
+    const tbody = document.getElementById("courseTableBody");
+
+    tbody.innerHTML = "";
+
+    if (courses.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty">
+                    No enrolled courses found
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    courses.forEach(course => {
+
+        let statusClass = "";
+
+        if (course.status1 === "Completed") {
+            statusClass = "completed";
+        }
+        else if (course.status1 === "In Progress") {
+            statusClass = "progress-status";
+        }
+        else if (course.status1 === "On Hold") {
+            statusClass = "hold";
+        }
+        else {
+            statusClass = "not-started";
+        }
+
+
+        tbody.innerHTML += `
+
+            <tr>
+
+                <td>${course.studentid}</td>
+
+                <td>${course.courseId}</td>
+
+                <td>${course.title}</td>
+
+                <td>
+
+                    <div class="progress-container">
+
+                        <div class="progress-bar">
+
+                            <div
+                                class="progress-fill"
+                                style="width:${course.progress}%"
+                            >
+                            </div>
+
+                        </div>
+
+                        <span>${course.progress}%</span>
+
+                    </div>
+
+                </td>
+
+                <td>
+                    <span class="status ${statusClass}">
+                        ${course.status1}
+                    </span>
+                </td>
+
+                <td class="actions">
+
+                    <button
+                        class="edit-btn"
+                        onclick="editCourse(${course.studentid}, ${course.courseId})"
+                    >
+                        Edit
+                    </button>
+
+                    <button
+                        class="delete-btn"
+                        onclick="deleteCourse(${course.studentid}, ${course.courseId})"
+                    >
+                        Delete
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+}
+
+
+// Add / Update course
+document
+    .getElementById("enrollmentForm")
+    .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+
+        const studentid =
+            parseInt(document.getElementById("studentid").value);
+
+        const courseId =
+            parseInt(document.getElementById("courseId").value);
+
+        const title =
+            document.getElementById("title").value;
+
+        const progress =
+            parseInt(document.getElementById("progress").value);
+
+        const status1 =
+            document.getElementById("status1").value;
+
+
+        const data = {
+            studentid: studentid,
+            courseId: courseId,
+            title: title,
+            progress: progress,
+            status1: status1
+        };
+
+
+        try {
+
+            let response;
+
+
+            // Update
+            if (editStudentId !== null && editCourseId !== null) {
+
+                response = await fetch(
+                    `${API_URL}/${editStudentId}/${editCourseId}`,
+                    {
+                        method: "PUT",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(data)
+                    }
+                );
+
+            }
+
+            // Create
+            else {
+
+                response = await fetch(
+                    API_URL,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(data)
+                    }
+                );
+
+            }
+
+
+            const result = await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.detail || "Operation failed"
+                );
+
+            }
+
+
+            showMessage(result.message, "success");
+
+            resetForm();
+
+            loadCourses();
+
+
+        } catch (error) {
+
+            showMessage(error.message, "error");
+
+        }
+
+    });
+
+
+// Edit course
+function editCourse(studentid, courseId) {
+
+    const course = allCourses.find(
+        item =>
+            item.studentid === studentid &&
+            item.courseId === courseId
+    );
+
+
+    if (!course) {
+        return;
+    }
+
+
+    document.getElementById("studentid").value =
+        course.studentid;
+
+    document.getElementById("courseId").value =
+        course.courseId;
+
+    document.getElementById("title").value =
+        course.title;
+
+    document.getElementById("progress").value =
+        course.progress;
+
+    document.getElementById("status1").value =
+        course.status1;
+
+
+    editStudentId = studentid;
+    editCourseId = courseId;
+
+
+    document.getElementById("formTitle").innerText =
+        "Update Enrolled Course";
+
+
+    document.querySelector(".primary").innerText =
+        "Update Enrollment";
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+// Delete course
+async function deleteCourse(studentid, courseId) {
+
+    const confirmDelete = confirm(
+        `Delete enrollment for Student ID ${studentid} and Course ID ${courseId}?`
+    );
+
+
+    if (!confirmDelete) {
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/${studentid}/${courseId}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+
+        const result = await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.detail || "Delete failed"
+            );
+
+        }
+
+
+        showMessage(result.message, "success");
+
+        loadCourses();
+
+
+    } catch (error) {
+
+        showMessage(error.message, "error");
+
+    }
+
+}
+
+
+// Search
+function searchCourses() {
+
+    const search =
+        document
+            .getElementById("searchInput")
+            .value
+            .toLowerCase()
+            .trim();
+
+
+    const filtered = allCourses.filter(course =>
+
+        String(course.studentid)
+            .toLowerCase()
+            .includes(search)
+
+        ||
+
+        String(course.courseId)
+            .toLowerCase()
+            .includes(search)
+
+        ||
+
+        String(course.title)
+            .toLowerCase()
+            .includes(search)
+
+        ||
+
+        String(course.status1)
+            .toLowerCase()
+            .includes(search)
+
+    );
+
+
+    displayCourses(filtered);
+
+}
+
+
+// Reset form
+function resetForm() {
+
+    document.getElementById("enrollmentForm").reset();
+
+
+    editStudentId = null;
+    editCourseId = null;
+
+
+    document.getElementById("formTitle").innerText =
+        "Add Enrolled Course";
+
+
+    document.querySelector(".primary").innerText =
+        "Save Enrollment";
+
+}
+
+
+// Show message
+function showMessage(message, type) {
+
+    const messageBox =
+        document.getElementById("message");
+
+
+    messageBox.innerText = message;
+
+    messageBox.className = type;
+
+
+    setTimeout(() => {
+
+        messageBox.innerText = "";
+        messageBox.className = "";
+
+    }, 3000);
+
+}
+
+
+// Initial load
+loadCourses();
+
+</script>
+
+</body>
+</html>
